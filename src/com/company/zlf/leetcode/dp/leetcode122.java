@@ -1,4 +1,4 @@
-package com.company.zlf.leetcode;
+package com.company.zlf.leetcode.dp;
 
 /**
  * @author zhanglf
