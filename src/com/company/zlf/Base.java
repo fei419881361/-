@@ -1,6 +1,7 @@
 package com.company.zlf;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Base {
 
@@ -14,6 +15,9 @@ public class Base {
     }
 }
 
+/**
+ * 数组相关题
+ */
 class Solution {
     public int[] plusOne(int[] digits) {
         for (int i = digits.length - 1; i >= 0; i--) {
@@ -254,9 +258,176 @@ class Solution {
         }
     }
 
+
+    /**
+     * 给定一个含有 M x N 个元素的矩阵（M 行，N 列），
+     * 请以对角线遍历的顺序返回这个矩阵中的所有元素，对角线遍历如下图所示。
+     *
+     * @param matrix
+     * @return
+     */
+    public int[] findDiagonalOrder(int[][] matrix) {
+        // 从左上到右下对角线， 先左上 后右下的斜向顺序。
+        // 找规律： 左上 row + col 为偶数； 右下 row + col 为奇数
+        // 左上row由大到小；右下row由小到大
+        // 下标 从 0 到 row + col  - 2
+        int row = matrix.length;
+        int col = matrix[0].length;
+        if (row == 0 && col == 0) {
+            return new int[0];
+        }
+        //int[] ret = new int[row * col];
+        int[] ans = new int[row * col];
+
+        LinkedList<Integer>[] ret = new LinkedList[row + col - 2 + 1];
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = new LinkedList<>();
+        }
+        // 遍历矩阵,得出答案放到ret中
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                int cur = matrix[i][j];
+                if ((i + j) % 2 == 0) {
+                    // 偶数
+                    ret[i + j].add(0, cur);
+                } else {
+                    // 奇数 i大的在前面
+                    ret[i + j].add(cur);
+                }
+            }
+        }
+
+        int index = 0;
+        for (int i = 0; i < ret.length; i++) {
+            LinkedList<Integer> cur = ret[i];
+            for (Integer buf : cur) {
+                ans[index++] = buf;
+            }
+        }
+
+        return ans;
+    }
+
+
+    /**
+     * 编写一个函数来查找字符串数组中的最长公共前缀。
+     * <p>
+     * 如果不存在公共前缀，返回空字符串 ""。
+     *
+     * @param strs
+     * @return
+     */
+    public String longestCommonPrefix(String[] strs) {
+        if (strs.length == 0) {
+            return "";
+        }
+        String first = strs[0];
+        int minLength = first.length();
+        for (int i = 1; i < strs.length; i++) {
+            String cur = strs[i];
+            int length = 0;
+
+            for (int j = 0; j < cur.length() && j < first.length(); j++) {
+                if (cur.charAt(j) == first.charAt(j)) {
+                    length++;
+                } else {
+                    break;
+                }
+            }
+
+            if (minLength > length) {
+                minLength = length;
+                if (minLength == 0) {
+                    break;
+                }
+            }
+        }
+
+        return first.substring(0, minLength);
+    }
+
+
+    /**
+     * 给定一个字符串 s，找到 s 中最长的回文子串。
+     *
+     * @param s
+     * @return
+     */
+    Boolean[][] dp;
+
+    public String longestPalindrome(String s) {
+        dp = new Boolean[s.length()][s.length()];
+        // 找到状态转移方程
+        // boolean  dp[i][j] 代表 s下标 i到j 的子串是否是一个回文字符串
+        // dp[i][j] =  (s[i] == s[j]) && dp[i+1][j-1]
+        // |i - j| == 1 返回 s[i] == s[j]
+        // 看做是一个表格，遍历右上方 在对角线 dp[i][i] = true
+        int ii = 0;
+        int jj = 0;
+        int max = 0;
+        char[] chars = s.toCharArray();
+        for (int i = 0; i < s.length(); i++) {
+            for (int j = i; j < s.length(); j++) {
+                int len = j - i;
+                if (i == j || len <= max) {
+                    continue;
+                }
+
+                boolean b = chars[i] == chars[j];
+                if (Math.abs(i - j) < 3 || !b) {
+                    dp[i][j] = b;
+                } else {
+                    dp[i][j] = helper(i + 1, j - 1, s) && b;
+                }
+                if (dp[i][j]) {
+                    max = len;
+                    ii = i;
+                    jj = j;
+
+                }
+            }
+        }
+        return s.substring(ii, jj + 1);
+    }
+
+    private boolean helper(int i, int j, String s) {
+        boolean b = s.charAt(i) == s.charAt(j);
+        if (!b) {
+            return false;
+        }
+        if (i == j) {
+            return true;
+        }
+        if (Math.abs(i - j) < 3) {
+            return b;
+        }
+        if (dp[i + 1][j - 1] != null) {
+            return dp[i + 1][j - 1] && b;
+        } else {
+            return helper(i + 1, j - 1, s) && b;
+        }
+
+    }
+
+    /**
+     * 给定一个字符串，逐个翻转字符串中的每个单词。
+     *
+     * @param s
+     * @return
+     */
+    public String reverseWords(String s) {
+        s = s.trim();
+        List<String> strings = Arrays.asList(s.split("\\s+"));
+        Collections.reverse(strings);
+        String ret = String.join(" ", strings);
+        return ret;
+    }
+
     public static void main(String[] args) {
         Solution solution = new Solution();
-        solution.setZeroes(new int[][]{{0,1,2,0},{3,4,5,2},{1,3,1,5}});
-       // System.out.println(i);
+        String s = solution.reverseWords("  hello world!  ");
+        System.out.println(s);
+
+        // System.out.println(i);
     }
 }
